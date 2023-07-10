@@ -376,11 +376,14 @@ insert into comments (post_id, user_id, comment, creation_date, is_confirmed) va
 
 -- 3. Questions ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+-- NOTE: Mert was here !
+
 -- Question 1
 SELECT 
 	posts.title, 
 	users.username, 
-	categories.name
+	categories.name AS category
 FROM 
 	posts
 	INNER JOIN users ON users.user_id = posts.user_id
@@ -450,11 +453,13 @@ ORDER BY COUNT(name)
 LIMIT 1;
 
 -- Question 10
-SELECT name FROM categories
-WHERE category_id = (
-	SELECT category_id FROM posts 
-	ORDER BY view_count
-	LIMIT 1);
+
+SELECT categories.name, SUM(posts.view_count) AS total_view_count
+FROM categories
+JOIN posts ON categories.category_id = posts.category_id
+GROUP BY categories.name
+ORDER BY SUM(posts.view_count) DESC
+LIMIT 1;
 	
 -- Question 11
 SELECT * FROM posts
@@ -482,7 +487,14 @@ ORDER BY creation_date DESC
 LIMIT 1;
 
 -- Question 15
-SELECT (SELECT COUNT(*) FROM comments) / COUNT(*) FROM posts;
+SELECT 
+	ROUND(AVG(comment_quantity)) AS avg_comment_quantity
+FROM (
+    SELECT posts.post_id, COUNT(comments) AS comment_quantity
+    FROM posts
+    JOIN comments ON posts.post_id = comments.post_id
+    GROUP BY posts.post_id
+) AS avg_comment_table;
 
 -- Question 16
 SELECT * FROM posts
